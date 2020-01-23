@@ -19,74 +19,104 @@ class Scrap(object):
         # pantalons
         self.url_pantalons = self.domain + "/fr-fr/l/pantalon/?sz=144"
         self.data_pantalons = []
-        # veste
+        # veste 
+        self.url_vestes = self.domain + "/fr-fr/l/veste/?sz=48"
+        self.data_vestes = []
         # costume
-        # t-shirt
+        # t-shirt 
+        self.url_tshirts = self.domain + "/fr-fr/l/t-shirt/?sz=168"
+        self.data_tshirts = []
         # chemise
         # chaussures
         # accessoire
         
         # Burton chaussure homme : https://www.zalando.fr/chaussures-homme/
         
-
-    def getPulls(self):
+    def parseHTML(self, typeProduit):
         products = self.soup.find_all(attrs={"class": "product"})
         print("products number", len(products))
         for product in products:
-            pulls = {}
+            produits = {}
             try:
-                pulls['url_img'] = ''
-                pulls['url_onmouseover'] = product.img['onmouseover'].split("'")[1]
-                pulls['url_onmouseout'] = product.img['onmouseout'].split("'")[1]
+                produits['url_img'] = ''
+                produits['url_onmouseover'] = product.img['onmouseover'].split("'")[1]
+                produits['url_onmouseout'] = product.img['onmouseout'].split("'")[1]
             except:
-                pulls['url_img'] = product.img['data-src']
-                pulls['url_onmouseover'] = ''
-                pulls['url_onmouseout'] = ''
-            pulls['name'] = product.h2.a.string
+                produits['url_img'] = product.img['data-src']
+                produits['url_onmouseover'] = ''
+                produits['url_onmouseout'] = ''
+            produits['name'] = product.h2.a.string
             prices = product.find_all(attrs={"class": "value"})
             if len(prices) == 2:
-                pulls['price_striked'] = prices[0]['content']
-                pulls['price'] = prices[1]['content']
+                produits['price_striked'] = prices[0]['content']
+                produits['price'] = prices[1]['content']
             else:
-                pulls['price_striked'] = 0
-                pulls['price'] = prices[0]['content']
+                produits['price_striked'] = 0
+                produits['price'] = prices[0]['content']
             
             percent_reduc = product.find(attrs={"class": "percent"})
             if product.find(attrs={"class": "percent"}) != None:
                 percent_reduc = product.find(attrs={"class": "percent"}).string
-                pulls['percent_reduc'] = percent_reduc.strip()
+                produits['percent_reduc'] = percent_reduc.strip()
             else:
-                pulls['percent_reduc'] = 0
+                produits['percent_reduc'] = 0
 
             # Catégorie
-            pulls['categorie'] = self.cateogries[0]
+            produits['categorie'] = self.cateogries[0]
             
-            self.data_pulls.append(pulls)
-            #break
-
-    def getPantalon(self):
-        print("getPantalon")
-
-    def getVeste(self):
-        print("getVeste")
-
-    def getTShirt(self):
-        print("getTShirt")
-
-    def getChaussure(self):
-        print("getChaussure")
-
-    def getChemise(self):
-        print("getChemise")
-        
-    def getData(self):
+            if typeProduit == 'Pulls':
+                self.data_pulls.append(produits)
+            elif typeProduit == 'Pantalons':
+                self.data_pantalons.append(produits)
+            elif typeProduit == 'Vestes':
+                self.data_vestes.append(produits)   
+            elif typeProduit == 'T-Shirts':
+                self.data_tshirts.append(produits)
+            break
+    
+    def getPulls(self):
         htm = requests.get(self.url_pulls).text
         self.soup = BeautifulSoup(htm, 'lxml')
-        #print(self.soup)
+        print("Pulls")
+        self.parseHTML('Pulls')
+        
 
+    def getPantalons(self):
+        htm = requests.get(self.url_pantalons).text
+        self.soup = BeautifulSoup(htm, 'lxml')
+        print("Pantalons")
+        self.parseHTML('Pantalons')
+
+    def getVestes(self):
+        htm = requests.get(self.url_vestes).text
+        self.soup = BeautifulSoup(htm, 'lxml')
+        print("Vestes")
+        self.parseHTML('Vestes')
+
+    def getTShirts(self):
+        htm = requests.get(self.url_tshirts).text
+        self.soup = BeautifulSoup(htm, 'lxml')
+        print("T-Shirts")
+        self.parseHTML('T-Shirts')
+
+    def getChaussures(self):
+        print("Chaussures")
+
+    def getChemises(self):
+        print("Chemises")
+        
+    def getData(self):
+        # htm = requests.get(self.url_pulls).text
+        # self.soup = BeautifulSoup(htm, 'lxml')
+        #print(self.soup)
         # Pulls
         self.getPulls()
-       
+        # Pantalons
+        self.getPantalons()
+        # Vestes
+        self.getVestes()
+        # T-Shirts
+        self.getTShirts()
 
 
 # Programme principal
@@ -94,4 +124,7 @@ if __name__ == "__main__":
     result = Scrap()
     result.getData()
     print(result.data_pulls)
+    print(result.data_pantalons)
+    print(result.data_vestes)
+    print(result.data_tshirts)
 
